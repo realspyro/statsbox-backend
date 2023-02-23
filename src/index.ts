@@ -2,15 +2,8 @@ import { ApolloServer } from "@apollo/server";
 import { startStandaloneServer } from "@apollo/server/standalone";
 import GraphQLJSON from "graphql-type-json";
 import mongoose from "mongoose";
-import { Post } from "../models/post.model.js";
+import { Post } from "./models/post.model";
 import PostSchema from "./mongodb/post.js";
-mongoose.set("strictQuery", false);
-mongoose.connect(
-  "mongodb+srv://adem_labsi:6CD6j7w0bm3gqFbi@statsbox.a42xrk8.mongodb.net/statsbox?retryWrites=true&w=majority",
-  () => {
-    console.log("connected to db");
-  }
-);
 
 const typeDefs = `#graphql
 
@@ -78,9 +71,16 @@ const server = new ApolloServer({
   typeDefs,
   resolvers,
 });
-const port = Number.parseInt(process.env.PORT) || 4000;
-const { url } = await startStandaloneServer(server, {
-  listen: { port },
-});
 
-console.log(`🚀  Server ready at: ${url}`);
+mongoose.set("strictQuery", false);
+mongoose.connect(
+  "mongodb+srv://adem_labsi:6CD6j7w0bm3gqFbi@statsbox.a42xrk8.mongodb.net/statsbox?retryWrites=true&w=majority",
+  () => {
+    const port = Number.parseInt(process.env.PORT) || 4000;
+    startStandaloneServer(server, {
+      listen: { port },
+    }).then((url) => {
+      console.log(`🚀  Server ready at: ${url}`);
+    });
+  }
+);

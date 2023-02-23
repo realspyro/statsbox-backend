@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { Post, PostContent } from "../../models/post.model";
+import { Post, PostContent } from "../models/post.model";
 
 const { Schema } = mongoose;
 
