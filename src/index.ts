@@ -46,11 +46,10 @@ const typeDefs = `#graphql
 const resolvers = {
   Any: GraphQLJSON,
   Query: {
-    getPost: async (_, args: { title: string }): Promise<Post> => {
+    getPost: async (_, args: { title: string }): Promise<Post | Error> => {
       const { title } = args;
 
       const post = await PostSchema.findOne({ title });
-      if (!post) throw Error("Not Found!");
       return post;
     },
   },
@@ -79,7 +78,7 @@ mongoose.connect(
     const port = Number.parseInt(process.env.PORT) || 4000;
     startStandaloneServer(server, {
       listen: { port },
-    }).then((url) => {
+    }).then(({ url }) => {
       console.log(`🚀  Server ready at: ${url}`);
     });
   }
