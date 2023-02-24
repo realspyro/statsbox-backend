@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
-import { Post, PostContent } from "../models/post.model";
+import { title } from "process";
+import { Post, PostContent, PostImage } from "../models/post.model";
 
 const { Schema } = mongoose;
 
@@ -9,6 +10,17 @@ const PostContentSchema = new Schema<PostContent>({
     required: true,
   },
   content: Schema.Types.Mixed,
+});
+
+const PostImageSchema = new Schema<PostImage>({
+  url: {
+    type: String,
+    required: true,
+  },
+  title: {
+    type: String,
+    required: true,
+  },
 });
 
 const PostSchema = new Schema<Post>({
@@ -26,6 +38,10 @@ const PostSchema = new Schema<Post>({
   },
   references: {
     type: [String],
+    required: true,
+  },
+  thumbnail: {
+    type: PostImageSchema,
     required: true,
   },
 });

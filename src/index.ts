@@ -14,7 +14,13 @@ const typeDefs = `#graphql
   title:String
   data: [QPostContent]
   references: [String]
+  thumbnail: QPostImage
 }
+
+  type QPostImage{
+    url:String
+    title:String
+  }
 
   type QPostContent {
     type: String
@@ -22,6 +28,7 @@ const typeDefs = `#graphql
   }
 
   type Query {
+    getPosts:[QPost]
     getPost(title:String!):QPost
   }
   
@@ -31,7 +38,13 @@ const typeDefs = `#graphql
   title:String!
   data: [MPostContent!]!
   references: [String]
+  thumbnail:MPostImage!
 }
+
+  input MPostImage{
+    url:String!
+    title:String!
+  }
 
   input MPostContent {
     type: String!
@@ -46,6 +59,9 @@ const typeDefs = `#graphql
 const resolvers = {
   Any: GraphQLJSON,
   Query: {
+    getPosts: async (p, args): Promise<Post[]> => {
+      return await PostSchema.find({});
+    },
     getPost: async (_, args: { title: string }): Promise<Post | Error> => {
       const { title } = args;
 
@@ -80,6 +96,11 @@ mongoose.connect(
       listen: { port },
     }).then(({ url }) => {
       console.log(`🚀  Server ready at: ${url}`);
+      //serverConfig();
     });
   }
 );
+
+const serverConfig = async () => {
+  await PostSchema.deleteMany({});
+};

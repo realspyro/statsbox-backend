@@ -3,8 +3,13 @@ export interface Post {
   title: string;
   data: PostContent[];
   references: string[];
+  thumbnail: PostImage;
 }
 
+export interface PostImage {
+  url: string;
+  title: string;
+}
 export interface PostContent {
   type: "title" | "text" | "img";
   content: any;
