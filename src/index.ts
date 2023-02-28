@@ -74,7 +74,7 @@ const resolvers = {
       let post = args.post;
       const newReferences = post.references.filter((e) => e != "");
       post.references = newReferences;
-      console.log(post);
+
       const createdPost = new PostSchema(post);
       createdPost.save();
       return "works like a charm";
