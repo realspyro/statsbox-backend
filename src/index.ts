@@ -1,9 +1,18 @@
 import { ApolloServer } from "@apollo/server";
-import { startStandaloneServer } from "@apollo/server/standalone";
+import { expressMiddleware } from "@apollo/server/express4";
+import { ApolloServerPluginDrainHttpServer } from "@apollo/server/plugin/drainHttpServer";
+import http from "http";
+import express from "express";
+import bodyParser from "body-parser";
+import cors from "cors";
+import { GraphQLError } from "graphql";
 import GraphQLJSON from "graphql-type-json";
 import mongoose from "mongoose";
 import { Post } from "./models/post.model";
 import PostSchema from "./mongodb/post.js";
+
+const app = express();
+const httpServer = http.createServer(app);
 
 const typeDefs = `#graphql
 
@@ -52,8 +61,11 @@ const typeDefs = `#graphql
   }
 
   type Mutation{
-    makePost(post:MPost!):String
+    makePost(post:MPost!):Any
   }
+
+
+
 `;
 
 const resolvers = {
@@ -70,14 +82,23 @@ const resolvers = {
     },
   },
   Mutation: {
-    makePost: (_, args: { post: Post }): string => {
+    makePost: async (_, args: { post: Post }): Promise<GraphQLError | void> => {
       let post = args.post;
       const newReferences = post.references.filter((e) => e != "");
       post.references = newReferences;
-
-      const createdPost = new PostSchema(post);
-      createdPost.save();
-      return "works like a charm";
+      try {
+        const createdPost = new PostSchema(post);
+        await createdPost.save();
+      } catch (err) {
+        return new GraphQLError("Bad Request try again!", {
+          extensions: {
+            code: "SOMETHING_BAD_HAPPENED",
+            http: {
+              status: 400,
+            },
+          },
+        });
+      }
     },
   },
 };
@@ -85,19 +106,30 @@ const resolvers = {
 const server = new ApolloServer({
   typeDefs,
   resolvers,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 
 mongoose.set("strictQuery", false);
 mongoose.connect(
   "mongodb+srv://adem_labsi:6CD6j7w0bm3gqFbi@statsbox.a42xrk8.mongodb.net/statsbox?retryWrites=true&w=majority",
-  () => {
+  async () => {
+    console.log("Connected to Database");
+
+    await server.start();
+
+    app.use(
+      "/",
+      cors<cors.CorsRequest>({
+        origin: ["https://statsproject.vercel.app"],
+      }),
+      bodyParser.json(),
+      expressMiddleware(server)
+    );
     const port = Number.parseInt(process.env.PORT) || 4000;
-    startStandaloneServer(server, {
-      listen: { port },
-    }).then(({ url }) => {
-      console.log(`🚀  Server ready at: ${url}`);
-      //serverConfig();
-    });
+
+    await new Promise<void>((resolve) => httpServer.listen({ port }, resolve));
+
+    console.log(`🚀 Server ready`);
   }
 );
 
