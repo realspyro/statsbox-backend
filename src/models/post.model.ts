@@ -11,6 +11,6 @@ export interface PostImage {
   title: string;
 }
 export interface PostContent {
-  type: "title" | "text" | "img";
+  type: "title" | "text" | "img" | "list";
   content: any;
 }

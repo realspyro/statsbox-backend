@@ -120,7 +120,7 @@ mongoose.connect(
     app.use(
       "/",
       cors<cors.CorsRequest>({
-        origin: ["https://statsproject.vercel.app"],
+        origin: ["https://statsproject.vercel.app", "http://localhost:3000"],
       }),
       bodyParser.json(),
       expressMiddleware(server)
