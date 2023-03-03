@@ -74,10 +74,22 @@ const resolvers = {
     getPosts: async (p, args): Promise<Post[]> => {
       return await PostSchema.find({});
     },
-    getPost: async (_, args: { title: string }): Promise<Post | Error> => {
+    getPost: async (
+      _,
+      args: { title: string }
+    ): Promise<Post | GraphQLError> => {
       const { title } = args;
 
       const post = await PostSchema.findOne({ title });
+      if (!post)
+        return new GraphQLError("NOT FOUND!", {
+          extensions: {
+            code: "POST DOESN'T EXIST",
+            http: {
+              status: 404,
+            },
+          },
+        });
       return post;
     },
   },
